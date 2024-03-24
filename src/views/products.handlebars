@@ -1,0 +1,30 @@
+<div>
+    <center>
+        <h1>products</h1>
+        <h2>Carrito : {{cartID}}</h2>
+        {{#each products}}
+            <p><strong>id: </strong>{{this.id}} <button onclick="sendRequest('{{this.id}}')">Agregar al carrito</button> <p>
+            
+            {{!-- <p>  <strong>Title: </strong>{{this.title}}  <strong>description: </strong>{{this.description}}  <strong>code: </strong>{{this.code}}  <strong>price: </strong>{{this.price}}  <strong>status: </strong>{{this.status}}  <strong>stock: </strong>{{this.stock}}  <strong>category: </strong>{{this.category}}  <strong>thumbnails: </strong>{{this.thumbnails}}</p> --}}
+        {{/each}}
+        {{#if hasPrevPage}}
+            <a href="products?limit={{limit}}&pageQuery={{prevPage}}">Anterior</a>
+        {{/if}}
+        <label>{{page}}</label>
+        {{#if hasNextPage}}
+            <a href="/products?limit={{limit}}&pageQuery={{nextPage}}">Siguiente</a>
+        {{/if}}
+
+    </center>
+</div>
+
+
+
+<script>
+    async function sendRequest(pid) {
+      console.log(`http://localhost:8080/api/carts/{{cartID}}/product/${pid}`);
+      const response = await fetch(`http://localhost:8080/api/carts/{{cartID}}/product/${pid}`, { method: 'POST' });
+      const data = await response.text();
+      console.log(data);
+    }
+</script>

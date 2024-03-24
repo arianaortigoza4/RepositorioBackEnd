@@ -1,0 +1,99 @@
+<h1 id="welcomeMessage"></h1>
+{{!-- Botón de logout --}}
+<button id="logoutButton">Logout</button>
+
+<button onclick="sendGetRequest()">Agregar producto</button>
+<form id="deleteForm">
+  <label for="productId">ID del Producto a eliminar:</label>
+  <input type="text" id="productId" name="productId" required>
+  <button type="button" onclick="sendDeleteRequest()">Eliminar Producto</button>
+</form>
+
+{{!-- Muestra un mensaje de bienvenida con el nombre del usuario --}}
+
+
+
+{{!-- <button onclick="enviarMensaje()">all products</button> --}}
+
+<h2>Datos del archivo JSON:</h2>
+<pre id="jsonData"></pre>
+
+
+<script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+<script>
+    
+    
+    
+    const socket = io.connect('http://localhost:8080');
+
+    socket.on('connect', () => {
+        console.log('Conectado al servidor');
+    });
+
+    socket.on('messageLogs', mensajes => {
+        console.log('Mensajes recibidos:', mensajes);
+    });
+    socket.on('message', data => {
+        console.log('Mensajes recibidos:', data);
+        document.getElementById('jsonData').textContent = data;
+    })
+    // Realiza una solicitud al servidor para obtener los datos JSON de forma asíncrona
+    // Realiza una solicitud al servidor para obtener los datos JSON de forma asíncrona
+    async function sendGetRequest() {
+      const response = await fetch('http://localhost:8080/api/products', { method: 'POST' });
+      const data = await response.text();
+      console.log(data);
+    }
+
+    async function sendDeleteRequest() {
+      const productId = document.getElementById('productId').value;
+      const response = await fetch(`http://localhost:8080/api/products/${productId}`, { method: 'DELETE' });
+      const data = await response.text();
+      console.log(data);
+    }
+
+
+    // Función para obtener el valor de un parámetro de la URL por nombre
+    function getParameterByName(name, url) {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, '\\$&');
+        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
+
+    // Obtener el nombre de usuario de la URL y mostrar un mensaje de bienvenida si está presente
+    document.addEventListener('DOMContentLoaded', function() {
+        var name = getParameterByName('name');
+        var admin = getParameterByName('admin');
+
+        console.log("admin: " + admin);
+        if (name) {
+            if(admin === 'true') {
+                console.log("admin");
+                document.getElementById('welcomeMessage').textContent = 'Bienvenidd@, ' + name + '!\n Usted es ADMINISTRADOR' ;
+            } else {
+                console.log("NO es admin");
+                document.getElementById('welcomeMessage').textContent = 'Bienvenid@,'+ name + '!\n Usted no es ADMINISTRADOR' ;
+            }
+        }
+
+      // Asignar la función de logout al evento click del botón de logout
+      document.getElementById('logoutButton').addEventListener('click', logout);
+    });
+
+     // Función para manejar el logout
+    function logout() {
+        // Realizar una solicitud al servidor para cerrar la sesión
+        fetch('/session/logout', { method: 'GET' })
+            .then(response => {
+                // Redirigir a la página de inicio de sesión
+                window.location.href = '/login';
+            })
+            .catch(error => {
+                console.error('Error al cerrar la sesión:', error);
+            });
+    }
+</script>
