@@ -11,7 +11,8 @@ dotenv.config({
 exports.configObject = {
     port: process.env.PORT || 8080,
     mongo_url: process.env.MONGO_URL,
-    jwt_secret_Key: process.env.JWT_SECRET_KEY
+    jwt_secret_Key: process.env.JWT_SECRET_KEY,
+    persistence:    process.env.PERSISTENCE
 }
 
 console.log("process.env.MONGO_URL" + process.env.MONGO_URL)

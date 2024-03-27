@@ -1,15 +1,18 @@
 const express = require('express');
 const cartsRouter = require('../src/routes/carts.router.js');
 const productsRouter = require('../src/routes/products.router');
+const userRouter = require('../src/routes/users.router');
 const handlebars = require('express-handlebars');
 const { Server: ServerIO } = require('socket.io');
 const fs = require('fs/promises');
 const { connectDB } = require('./configDB/connectDB.js');
-const userManager = require('../src/dao/mongo/usersManager.js');
 const cartManager = require('../src/dao/mongo/CartsManager.js');
-const chatManagerRouter = require('../src/dao/mongo/ChatManager.js');
+//const chatManagerRouter = require('../src/dao/mongo/ChatManager.js');
 const viewsProductsRouter = require('./routes/views.products.routes.js');
 const viewsCartRouter = require('./routes/views.cart.routes.js');
+
+
+
 const { userModel } = require('../src/dao/models/users.model')
 const { productsModel } = require('../src/dao/models/products.model')
 
@@ -171,7 +174,7 @@ app.get('/products', async (req, res) => {
 
 
 app.use('/session', sessionRouter);
-app.use('/api/users', userManager);
+app.use('/api/users', userRouter);
 app.use('/api/carts', cartsRouter);
 app.use('/api/products', (req, res, next) => {
     // Llama a tu función personalizada aquí
@@ -183,7 +186,7 @@ app.use('/api/products', (req, res, next) => {
 app.use('/api/products', productsRouter);
 
 // Importa el chatManagerRouter y asigna una ruta adecuada
-app.use('/api/chat', chatManagerRouter);
+//app.use('/api/chat', chatManagerRouter);
 
 // Agrega el middleware para la ruta '/'
 app.use('/', viewsProductsRouter(io));
@@ -217,7 +220,7 @@ async function updateJsonClient() {
         const response = await getProductsByFile('src/jsonDb/Products.json');
         const jsonData = JSON.stringify(response, null, 2);
         io.emit('message', jsonData);
-        console.log('\n\n\n\n\n updateJsonClient \n\n\n\n\n' + jsonData);
+        //console.log('\n\n\n\n\n updateJsonClient \n\n\n\n\n' + jsonData);
     } catch (error) {
         console.error('Error al obtener datos JSON:', error);
     }
@@ -227,7 +230,7 @@ function cbConnection(socket) {
     console.log('cliente conectado');
     updateJsonClient();
     socket.on('message', (data) => {
-        console.log(data);
+        //console.log(data);
         mensajes.push(data);
         console.log('MENSAJE RECIBIDO EN EL SERVIDOR');
     });
