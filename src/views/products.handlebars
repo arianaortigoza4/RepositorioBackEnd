@@ -1,11 +1,9 @@
 <div>
     <center>
-        <h1>products</h1>
-        <h2>Carrito : {{cartID}}</h2>
+        <h1>Productos</h1>
+        <h2 id="carritoID"></h2>
         {{#each products}}
-            <p><strong>id: </strong>{{this.id}} <button onclick="sendRequest('{{this.id}}')">Agregar al carrito</button> <p>
-            
-            {{!-- <p>  <strong>Title: </strong>{{this.title}}  <strong>description: </strong>{{this.description}}  <strong>code: </strong>{{this.code}}  <strong>price: </strong>{{this.price}}  <strong>status: </strong>{{this.status}}  <strong>stock: </strong>{{this.stock}}  <strong>category: </strong>{{this.category}}  <strong>thumbnails: </strong>{{this.thumbnails}}</p> --}}
+            <p><strong>ID: </strong>{{this.id}} - Price: </strong>{{this.price}} <button onclick="sendRequest('{{this.id}}',{{this.price}})">Agregar al carrito</button></p>
         {{/each}}
         {{#if hasPrevPage}}
             <a href="products?limit={{limit}}&pageQuery={{prevPage}}">Anterior</a>
@@ -14,17 +12,133 @@
         {{#if hasNextPage}}
             <a href="/products?limit={{limit}}&pageQuery={{nextPage}}">Siguiente</a>
         {{/if}}
-
     </center>
 </div>
+
+<div id="responseText" style="text-align: center; margin-top: 20px;"></div>
+
+<form style="text-align: center; margin-top: 20px;">
+  <label for="email">Correo Electrónico:</label>
+  <input type="email" id="email" name="email" required>
+  <br>
+  <button type="button" onclick="finalizarCompra()">Finalizar Compra</button>
+</form>
+
+
+
 
 
 
 <script>
-    async function sendRequest(pid) {
-      console.log(`http://localhost:8080/api/carts/{{cartID}}/product/${pid}`);
-      const response = await fetch(`http://localhost:8080/api/carts/{{cartID}}/product/${pid}`, { method: 'POST' });
-      const data = await response.text();
-      console.log(data);
+    let cartID = undefined
+
+    function showDataFront(data){
+        data = JSON.parse(data); // Convertir la cadena de texto en un objeto JSON
+        console.log("data:", data); 
+        let productsIdsHTML = ""  
+        data.payload.products.forEach(product => {
+            productsIdsHTML += `ID: ${product._id} | Precio: ${product.price} | Cantidad: ${product.quantity} \n`; // Agrega cada ID como un elemento de la lista
+        });
+
+        // Obtener el div donde mostrar los IDs de los productos
+        const productsDiv = document.getElementById('responseText');
+
+        // Insertar la cadena HTML en el div
+        productsDiv.innerText = productsIdsHTML;
+    }
+
+    async function createCart(pid,price) {
+        const requestBody = {
+            product: pid,
+            price: price,
+            quantity: 1
+        };
+        const response = await fetch('http://localhost:8080/api/carts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+        console.log("data:", data);
+
+        if (response.ok) {
+            document.getElementById('responseText').innerText = "Producto agregado al carrito correctamente.";
+        } else {
+            document.getElementById('responseText').innerText = "Error al agregar el producto al carrito.";
+        }
+
+        // Manejar la respuesta del servidor
+        if (data.payload && Array.isArray(data.payload.products) && data.payload.products.length > 0) {
+            // Concatenar información de los productos
+            const productInfo = data.payload.products.map(product => `ID: ${product._id} | Precio: ${product.price} | Cantidad: ${product.quantity}`);
+            document.getElementById('responseText').innerText = productInfo.join('\n');
+        } else {
+            document.getElementById('responseText').innerText = "No se encontraron productos válidos en el carrito.";
+        }
+
+        // Mostrar el ID del carrito
+        if (data.payload && data.payload._id) {
+            console.log(data.payload._id);
+            document.getElementById('carritoID').innerText = "Carrito ID: " + data.payload._id;
+        }
+        return data.payload._id;
+    }
+
+
+    async function addProduct(pid, price, id){
+        const response = await fetch(`http://localhost:8080/api/carts/${id}/product/${pid}`, { method: 'POST' });
+        let data = await response.text();
+        showDataFront(data);
+
+        
+        
+    }
+
+    async function sendRequest(pid, price) {
+
+        
+
+        try {
+            console.log("cartID: " + cartID);
+            if (cartID == undefined) {
+                console.log(`Adding product ${pid} to a new cart...`);
+                cartID = await createCart(pid,price);
+                console.log("cartID2: " + cartID);
+            }else{
+                console.log(`Adding product ${pid} to cart ${cartID}...`);
+                await addProduct(pid, price, cartID);
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('responseText').innerText = "Ocurrió un error al procesar la solicitud.";
+        }
+    }
+
+    async function finalizarCompra() {
+        try {
+            const requestBody = {
+                email: document.getElementById('email').value
+            };
+
+            let urlRequest = "http://localhost:8080/api/carts/" + encodeURI(cartID) + "/purchase"
+            
+            const response = await fetch(urlRequest, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            const data = await response.text();
+            console.log(data);
+            // Puedes agregar más lógica aquí, como redirigir a una página de confirmación, etc.
+        } catch (error) {
+            console.error('Error:', error);
+        }
     }
 </script>

@@ -2,6 +2,13 @@
 
 ### Te genera un nuevo producto vacio con un nuevo id
 POST http://localhost:8080/api/carts
+Content-Type: application/json
+
+{
+  "product": "Ejemplo18",
+  "price": 14,
+  "quantity": 3
+}
 ### Consulta por un id especifico y te devuelve el producto
 GET http://localhost:8080/api/carts/11
 ### agrego un nuevo producto al id existente

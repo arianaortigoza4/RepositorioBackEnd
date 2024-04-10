@@ -22,17 +22,23 @@ class SessionController {
         if (!req.user) return res.status(401).send({status: 'error', error: 'creadential invalid'})
         req.session.user = {
             name: `${req.user.first_name} ${req.user.last_name}`,
-            admin: req.user.admin,
+            role: req.user.role,
             email: req.user.email
         }
-
-        // console.log("req.session.user.admin : " + req.session.user.admin)
-
+        console.log("req.session.user.role: ", req.session.user.role)
+        let urlRedirect = ""
+        if(req.session.user.role === "admin"){
+            urlRedirect = '/realtimeproducts?name=' + encodeURIComponent(req.session.user.name) + '&admin=true'
+        }else{
+            urlRedirect = '/products?name=' + encodeURIComponent(req.session.user.name) + '&admin=false'
+        }
+        console.log(urlRedirect)
+        
         res.status(200).send({
             status: 'success',
             payload: req.session.user,
             message: 'Login correcto',
-            redirectTo: '/realtimeproducts?name=' + encodeURIComponent(req.session.user.name) + '&admin=' + encodeURIComponent(req.session.user.admin)
+            redirectTo: urlRedirect
         })
     }
 

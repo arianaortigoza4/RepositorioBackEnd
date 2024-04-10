@@ -141,8 +141,8 @@ app.get('/users', async (req, res) => {
 
 
 app.get('/products', async (req, res) => {
-    const currentCart = await cartManager.createCart('0',0,0);
-    console.log(currentCart._id.toString());
+    //const currentCart = await cartManager.createCart('0',0,0);
+    //console.log(currentCart._id.toString());
     const {limit = 10, pageQuery = 1} = req.query
     const {
         docs,
@@ -159,7 +159,6 @@ app.get('/products', async (req, res) => {
         nextPage,
         page)
     res.render('products', {
-        cartID : currentCart._id.toString(),
         limit: limit,
         products: docs,
         hasPrevPage, 

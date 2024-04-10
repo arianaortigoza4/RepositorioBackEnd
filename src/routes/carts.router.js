@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const cartManager = require('../dao/mongo/CartsManager.js');
+const ticketManager = require('../dao/mongo/TicketManager.js');
 
 const router = Router();
 
@@ -135,6 +136,35 @@ router.delete('/:cid', async (req, res) => {
     const data = await cartManager.deleteAllProductsOfCart(cartId);
 
     res.status(200).send({ status: 'Success', payload: data });
+  } catch (error) {
+    res.status(500).send({ status: 'Error', payload: `${error}` });
+  }
+});
+
+
+
+router.post('/:cid/purchase', async (req, res) => {
+  console.log(req.body);
+  if (!req.params.cid) {
+    res.status(400).send({ status: 'Error', payload: 'Missed required arguments: cart id' });
+  }
+
+  try {
+    const cartId = req.params.cid;
+    const currentCart = await cartManager.getCartById(cartId);
+    console.log("currentCart:");
+    let totalPrice = 0;
+    currentCart.products.forEach(products => {
+      if(products.quantity  && products.quantity){
+          console.log("Product price:", products.price);
+          console.log("Product quantity:", products.quantity);
+          totalPrice += products.price * products.quantity;
+        }
+        // Agrega más propiedades según sea necesario
+      });
+    console.log("Total price:", totalPrice);
+    currentTicket = await ticketManager.createTicket(totalPrice,req.body.email)
+    res.status(200).send({ status: 'Success', payload: currentTicket });
   } catch (error) {
     res.status(500).send({ status: 'Error', payload: `${error}` });
   }
