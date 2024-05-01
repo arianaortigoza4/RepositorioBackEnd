@@ -1,5 +1,7 @@
 const UserMongoManager = require("../dao/Mongo/usersDao.mongo")
 const { userService } = require("../repositories")
+const { createHash } = require('../utils/hashBcrypt')
+
 
 class UserController {
     constructor(){
@@ -62,6 +64,35 @@ class UserController {
         const result = await this.service.deleteUser( uid)
         res.send(result)
     }
+
+    changeRole = async (req, res)=>{
+        const { uid } = req.params
+        const user = await this.service.getUser({_id: uid})
+        if (user.role == 'user') {
+            user.role = 'premium'
+        }else if (user.role == 'premium') {
+            user.role = 'user'
+        }
+        const result = await this.service.updateUser(uid, user)
+        res.status(200).send({
+            status: 'success',
+            message: result
+        })
+    }
+
+    resetPassword = async (req, res)=>{
+        const { email,newPass } = req.body
+        console.log("email: " + email + " new pass: " + newPass)
+        const user = await this.service.getUser({email: email})
+        console.log("user: " + user)
+        user.password = createHash(newPass)
+        const result = await this.service.updateUser(user._id, user)
+        res.status(200).send({
+            status: 'success',
+            message: result
+        })
+    }
+
 }
 
 module.exports = UserController

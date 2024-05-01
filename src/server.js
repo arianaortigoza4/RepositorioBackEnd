@@ -14,7 +14,7 @@ const viewsCartRouter = require('./routes/views.cart.routes.js');
 const mockingRouter = require('../src/routes/mocking.router');
 
 const loggerTest = require('../src/routes/loggertest.router.js');
-
+const { userService, productService } = require("../src/repositories")
 
 
 const { userModel } = require('../src/dao/models/users.model')
@@ -28,7 +28,7 @@ const sessionRouter = require('../src/routes/session.routes.js');
 const { auth } = require('../src/middleware/authentication.js')
 
 const { loggerWrite } = require('../src/logger/logger.js')
-
+const mailRouter = require('../src/routes/mail.router');
 
 const passport = require('passport')
 const { initializePassport } = require('./dao/mongo/sessionManager.js')
@@ -179,6 +179,7 @@ app.get('/products', async (req, res) => {
 
 
 app.use('/session', sessionRouter);
+app.use('/mail', mailRouter);
 app.use('/api/users', userRouter);
 app.use('/api/carts', cartsRouter);
 app.use('/api/products', (req, res, next) => {
@@ -226,8 +227,9 @@ async function getProductsByFile(path) {
 
 async function updateJsonClient() {
     try {
-        const response = await getProductsByFile('src/jsonDb/Products.json');
+        const response = await productService.getProducts();
         const jsonData = JSON.stringify(response, null, 2);
+        //console.log(jsonData);
         io.emit('message', jsonData);
         //loggerWrite.debug('\n\n\n\n\n updateJsonClient \n\n\n\n\n' + jsonData);
     } catch (error) {

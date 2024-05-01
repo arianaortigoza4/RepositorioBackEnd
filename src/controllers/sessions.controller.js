@@ -27,8 +27,8 @@ class SessionController {
         }
         console.log("req.session.user.role: ", req.session.user.role)
         let urlRedirect = ""
-        if(req.session.user.role === "admin"){
-            urlRedirect = '/realtimeproducts?name=' + encodeURIComponent(req.session.user.name) + '&admin=true'
+        if(req.session.user.role === "admin" || req.session.user.role === "premium") {
+            urlRedirect = '/realtimeproducts?name=' + encodeURIComponent(req.session.user.name) + '&role=' + encodeURIComponent(req.session.user.role)
         }else{
             urlRedirect = '/products?name=' + encodeURIComponent(req.session.user.name) + '&admin=false'
         }

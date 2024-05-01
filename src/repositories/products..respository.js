@@ -8,7 +8,7 @@ class ProductRepository {
     getProduct     = async (filter) => await this.dao.get(filter)
     createProduct  = async (newProduct) => await this.dao.create(newProduct)
     updateProduct  = async (pid, productToUpdate) => await this.dao.create(pid, productToUpdate)
-    deleteProduct  = async (pid) => await this.dao.create(pid)
+    deleteProduct  = async (pid) => await this.dao.delete(pid)
 }
 
 module.exports = ProductRepository

@@ -38,6 +38,7 @@ class MockController {
             status: faker.datatype.boolean(),
             stock: faker.datatype.number(),
             category: faker.commerce.department(),
+            owner: faker.database.email(),
             thumbnails: [faker.image.imageUrl()]
         }
     }

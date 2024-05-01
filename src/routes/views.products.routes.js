@@ -1,5 +1,6 @@
 const express = require('express');
 const productManager = require('../dao/mongo/ProductsManager.js');
+const { userService, productService } = require("../repositories")
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ const viewsProductsRouter = (io) => {
     try {
       const { limit, page, sort, query } = req.query;
 
-      const products = await productManager.getProducts(limit, page, sort, query);
+      const products = await productService.getProducts(limit, page, sort, query);
 
       res.render('products/products', { products });
     } catch (error) {
@@ -26,7 +27,7 @@ const viewsProductsRouter = (io) => {
 
       if (!formatPid) return;
 
-      const product = await productManager.getProductById(formatPid);
+      const product = await productService.getProductById(formatPid);
 
       res.render('products/product', { product });
     } catch (error) {
@@ -36,7 +37,7 @@ const viewsProductsRouter = (io) => {
 
   router.get('/realtimeproducts', async (req, res) => {
     try {
-      const products = await productManager.getProducts();
+      const products = await productService.getProducts();
 
       io.on('connection', (socket) => {
         io.emit('products', products);
@@ -44,11 +45,11 @@ const viewsProductsRouter = (io) => {
         socket.on('addProduct', async (product) => {
           if (!product) return;
 
-          const { title, description, code, price, status, stock, category, thumbnails } = product;
+          //const { title, description, code, price, status, stock, category, thumbnails } = product;
 
-          await productManager.addProduct(title, description, code, price, status, stock, category, thumbnails);
+          //await productService.createProduct(title, description, code, price, status, stock, category, thumbnails);
 
-          const updatedProducts = await productManager.getProducts();
+          const updatedProducts = await productService.getProducts();
 
           io.emit('products', updatedProducts);
         });
@@ -58,9 +59,9 @@ const viewsProductsRouter = (io) => {
           const productId = pid.trim();
           if (!productId) return;
 
-          await productManager.deleteProduct(productId);
+          await productService.deleteProduct(productId);
 
-          const updatedProducts = await productManager.getProducts();
+          const updatedProducts = await productService.getProducts();
 
           io.emit('products', updatedProducts);
         });
@@ -70,8 +71,8 @@ const viewsProductsRouter = (io) => {
 
           const { pid, field, data } = product;
 
-          await productManager.updateProduct(pid, field, data);
-          const updatedProducts = await productManager.getProducts();
+          await productService.updateProduct(pid, field, data);
+          const updatedProducts = await productService.getProducts();
 
           io.emit('products', updatedProducts);
         });

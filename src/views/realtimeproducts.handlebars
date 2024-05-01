@@ -2,7 +2,44 @@
 {{!-- Botón de logout --}}
 <button id="logoutButton">Logout</button>
 
-<button onclick="sendGetRequest()">Agregar producto</button>
+<button onclick="showAddProductForm()">Agregar producto</button>
+
+<form id="addProductForm" style="display: none;">
+  <label for="title">Título:</label>
+  <input type="text" id="title" name="title" required><br>
+  
+  <label for="description">Descripción:</label>
+  <input type="text" id="description" name="description" required><br>
+  
+  <label for="code">Código:</label>
+  <input type="text" id="code" name="code" required><br>
+  
+  <label for="price">Precio:</label>
+  <input type="text" id="price" name="price" required><br>
+  
+  <label for="status">Estado:</label>
+  <select id="status" name="status">
+    <option value="true">Activo</option>
+    <option value="false">Inactivo</option>
+  </select><br>
+  
+  <label for="stock">Stock:</label>
+  <input type="number" id="stock" name="stock" required><br>
+  
+  <label for="category">Categoría:</label>
+  <input type="text" id="category" name="category" required><br>
+  
+  <label for="owner">Propietario:</label>
+  <input type="email" id="owner" name="owner" readonly><br>
+  
+  <label for="thumbnails">Imágenes:</label>
+  <input type="text" id="thumbnails" name="thumbnails" required><br>
+  
+  <button type="button" onclick="sendAddProductRequest()">Agregar Producto</button>
+</form>
+
+
+
 <form id="deleteForm">
   <label for="productId">ID del Producto a eliminar:</label>
   <input type="text" id="productId" name="productId" required>
@@ -31,12 +68,65 @@
     });
 
     socket.on('messageLogs', mensajes => {
-        console.log('Mensajes recibidos:', mensajes);
+        //console.log('Mensajes recibidos:', mensajes);
     });
     socket.on('message', data => {
-        console.log('Mensajes recibidos:', data);
+        //console.log('Mensajes recibidos:', data);
         document.getElementById('jsonData').textContent = data;
     })
+
+
+    function showAddProductForm() {
+        document.getElementById("addProductForm").style.display = "block";
+        // Actualizando el valor del campo de propietario en el formulario
+        document.getElementById("owner").value = getParameterByName('name');
+    }
+
+    function sendAddProductRequest() {
+    var formData = {
+        title: document.getElementById("title").value,
+        description: document.getElementById("description").value,
+        code: document.getElementById("code").value,
+        price: document.getElementById("price").value,
+        status: document.getElementById("status").value,
+        stock: document.getElementById("stock").value,
+        category: document.getElementById("category").value,
+        owner: document.getElementById("owner").value,
+        thumbnails: [document.getElementById("thumbnails").value]
+    };
+
+    
+
+    // Aquí deberías hacer la solicitud POST al servidor con los datos del formulario
+    // Por simplicidad, mostraré los datos en la consola en lugar de hacer una solicitud real
+    console.log("Datos del nuevo producto:", formData);
+
+    // Limpia el formulario después de enviar la solicitud
+    document.getElementById("addProductForm").reset();
+
+
+    // Construyendo el cuerpo de la solicitud
+    var requestBody = JSON.stringify(formData);
+
+    // Realizando la solicitud POST
+    fetch('http://localhost:8080/api/products', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: requestBody
+    })
+    .then(response => response.json())
+    .then(data => {
+    console.log('Respuesta del servidor:', data);
+    })
+    .catch(error => {
+    console.error('Error al enviar la solicitud:', error);
+    });
+    }
+
+
+
     // Realiza una solicitud al servidor para obtener los datos JSON de forma asíncrona
     // Realiza una solicitud al servidor para obtener los datos JSON de forma asíncrona
     async function sendGetRequest() {
@@ -46,10 +136,33 @@
     }
 
     async function sendDeleteRequest() {
-      const productId = document.getElementById('productId').value;
-      const response = await fetch(`http://localhost:8080/api/products/${productId}`, { method: 'DELETE' });
-      const data = await response.text();
-      console.log(data);
+        var name = getParameterByName('name');
+        var role = getParameterByName('role');
+        console.log(name, role);
+        let isAllowed2Delete = false;
+        const productId = document.getElementById('productId').value;
+        if(role == 'admin') {
+            isAllowed2Delete = true;
+        }else{
+            const product = await fetch(`http://localhost:8080/api/products/${productId}`, { method: 'GET' });    
+            const dataProduct = await product.json();
+            console.log("El producto pertenece a : " + dataProduct.payload.owner + "y usted es : " + name);
+            if(name == dataProduct.payload.owner){
+                console.log("El producto le pertenece");
+                isAllowed2Delete = true;
+            }
+        } 
+
+        if(isAllowed2Delete){
+
+            const response = await fetch(`http://localhost:8080/api/products/${productId}`, { method: 'DELETE' });
+            const data = await response.text();
+            console.log(data);
+            console.log("Producto eliminado");
+        }else{
+
+            console.log("NO ESTA AUTORIZADO PARA ELIMINAR ESTE PRODUCTO");
+        }
     }
 
 
@@ -67,17 +180,19 @@
     // Obtener el nombre de usuario de la URL y mostrar un mensaje de bienvenida si está presente
     document.addEventListener('DOMContentLoaded', function() {
         var name = getParameterByName('name');
-        var admin = getParameterByName('admin');
+        var role = getParameterByName('role');
 
-        console.log("admin: " + admin);
+        console.log("role: " + role);
         if (name) {
-            if(admin === 'true') {
+            console.log("role: " + role);
+            document.getElementById('welcomeMessage').textContent = 'Bienvenidd@, ' + name + '!\n Usted es usuario ' + role;
+            /*if(admin === 'true') {
                 console.log("admin");
                 document.getElementById('welcomeMessage').textContent = 'Bienvenidd@, ' + name + '!\n Usted es ADMINISTRADOR' ;
             } else {
                 console.log("NO es admin");
                 document.getElementById('welcomeMessage').textContent = 'Bienvenid@,'+ name + '!\n Usted no es ADMINISTRADOR' ;
-            }
+            }*/
         }
 
       // Asignar la función de logout al evento click del botón de logout

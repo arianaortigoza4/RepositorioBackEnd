@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const { productService } = require("../repositories");
 
 // Diccionario de errores
@@ -32,15 +33,26 @@ class ProductController {
         }
     }
 
-    getProduct  = async (req, res) => {
+    getProduct = async (req, res) => {
         try {
             const { pid } = req.params;
-            const product = await this.service.getProduct(pid);
-            res.send({
-                status: 'success',
-                payload: product
-            });
+            const products = await this.service.getProducts();
+            const idWanted = new ObjectId(pid); // Crear un ObjectId a partir del string
+            let product = products.find(product => product._id.equals(idWanted)); // Comparar como ObjectId
+    
+            if (product) {
+                res.send({
+                    status: 'success',
+                    payload: product
+                });
+            } else {
+                res.status(404).send({
+                    status: 'error',
+                    message: 'Producto no encontrado'
+                });
+            }
         } catch (error) {
+            console.error(error);
             res.status(500).send({
                 status: 'error',
                 message: this.translateError(error)
