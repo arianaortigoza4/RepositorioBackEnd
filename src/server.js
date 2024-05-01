@@ -11,7 +11,7 @@ const cartManager = require('../src/dao/mongo/CartsManager.js');
 const viewsProductsRouter = require('./routes/views.products.routes.js');
 const viewsCartRouter = require('./routes/views.cart.routes.js');
 
-
+const mockingRouter = require('../src/routes/mocking.router');
 
 const { userModel } = require('../src/dao/models/users.model')
 const { productsModel } = require('../src/dao/models/products.model')
@@ -183,6 +183,7 @@ app.use('/api/products', (req, res, next) => {
     next();
 });
 app.use('/api/products', productsRouter);
+app.use('/api/mocking', mockingRouter);
 
 // Importa el chatManagerRouter y asigna una ruta adecuada
 //app.use('/api/chat', chatManagerRouter);

@@ -12,6 +12,7 @@ const {
     register,
     login,
     current,
+    isAdmin,
     logout,
     failregister
 } = new SessionController()
@@ -21,7 +22,7 @@ router.post('/login', passport.authenticate('login', {failureRedirect: '/api/ses
 
 router.post('/register', passport.authenticate('register', {failureRedirect: '/session/failregister'}) , register)
 
-router.get('/current', current);
+router.get('/current', isAdmin, current);
 
 router.get('/logout', logout)
 

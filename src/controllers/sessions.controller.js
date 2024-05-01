@@ -55,6 +55,18 @@ class SessionController {
         });
     }
 
+    isAdmin = (req, res, next) => {
+        // Verifica si hay una sesión de usuario
+        if (!req.session.user) {
+            return res.status(401).json({ status: 'error', error: 'No session found' });
+        }
+        if (req.session.user.role !== "admin") {
+            return res.status(403).json({ status: 'error', error: 'Unauthorized' });
+        }
+    
+        next();
+    };
+
 
     logout = (req, res) => {
         // session.destroy()
