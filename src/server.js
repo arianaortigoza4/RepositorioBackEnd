@@ -13,6 +13,10 @@ const viewsCartRouter = require('./routes/views.cart.routes.js');
 
 const mockingRouter = require('../src/routes/mocking.router');
 
+const loggerTest = require('../src/routes/loggertest.router.js');
+
+
+
 const { userModel } = require('../src/dao/models/users.model')
 const { productsModel } = require('../src/dao/models/products.model')
 
@@ -23,6 +27,8 @@ const logger = require('morgan'); // Importa el middleware de registro
 const sessionRouter = require('../src/routes/session.routes.js');
 const { auth } = require('../src/middleware/authentication.js')
 
+const { loggerWrite } = require('../src/logger/logger.js')
+
 
 const passport = require('passport')
 const { initializePassport } = require('./dao/mongo/sessionManager.js')
@@ -31,12 +37,12 @@ const dotenv = require('dotenv')
 const { program } = require("../src/enviroment/commander")
 
 const { mode } = program.opts()
-console.log(mode)
+loggerWrite.info(mode)
 dotenv.config({
     path: mode === 'development' ? 'src/enviroment/.env.development' : 'src/enviroment/.env.production'
 })
 
-
+loggerWrite.debug('TEST');
 exports.configObject = {
     port: process.env.PORT || 8080,
     mongo_url: process.env.MONGO_URL,
@@ -49,14 +55,14 @@ const PORT = 3000;
 
 connectDB();
 
-console.log(__dirname + '/public');
+loggerWrite.info(__dirname + '/public');
 app.use(express.static(__dirname + '/public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(logger('dev'))
 app.use(cookieParser())
 
-console.log("mongoUrl: " + exports.configObject.mongo_url)
+loggerWrite.debug("mongoUrl: " + exports.configObject.mongo_url)
 app.use(session({
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_URL,
@@ -80,7 +86,7 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'handlebars');
 
 const httpServer = app.listen(process.env.PORT, () => {
-    console.log('Escuchando en el puerto ' + process.env.PORT);
+    loggerWrite.info('Escuchando en el puerto ' + process.env.PORT);
 });
 
 const io = new ServerIO(httpServer);
@@ -122,7 +128,7 @@ app.get('/users', async (req, res) => {
         nextPage,
         page 
     } = await userModel.paginate({}, {limit, page: pageQuery, sort: {first_name: -1}, lean: true})
-    console.log(docs,
+    loggerWrite.debug(docs,
         hasPrevPage, 
         hasNextPage,
         prevPage, 
@@ -142,7 +148,7 @@ app.get('/users', async (req, res) => {
 
 app.get('/products', async (req, res) => {
     //const currentCart = await cartManager.createCart('0',0,0);
-    //console.log(currentCart._id.toString());
+    //loggerWrite.debug(currentCart._id.toString());
     const {limit = 10, pageQuery = 1} = req.query
     const {
         docs,
@@ -152,7 +158,7 @@ app.get('/products', async (req, res) => {
         nextPage,
         page 
     } = await productsModel.paginate({}, {limit, page: pageQuery, sort: {title: -1}, lean: true})
-    console.log(docs,
+    loggerWrite.debug(docs,
         hasPrevPage, 
         hasNextPage,
         prevPage, 
@@ -178,12 +184,14 @@ app.use('/api/carts', cartsRouter);
 app.use('/api/products', (req, res, next) => {
     // Llama a tu función personalizada aquí
     updateJsonClient();
-    console.log('ACTUALIZAR PRODUCTO');
+    loggerWrite.debug('ACTUALIZAR PRODUCTO');
     // Continúa con el siguiente middleware/route handler
     next();
 });
 app.use('/api/products', productsRouter);
 app.use('/api/mocking', mockingRouter);
+
+app.use('/loggertest', loggerTest);
 
 // Importa el chatManagerRouter y asigna una ruta adecuada
 //app.use('/api/chat', chatManagerRouter);
@@ -205,6 +213,7 @@ async function readFile(path) {
     }
 }
 
+
 async function getProductsByFile(path) {
     const products = await readFile(path);
 
@@ -220,19 +229,19 @@ async function updateJsonClient() {
         const response = await getProductsByFile('src/jsonDb/Products.json');
         const jsonData = JSON.stringify(response, null, 2);
         io.emit('message', jsonData);
-        //console.log('\n\n\n\n\n updateJsonClient \n\n\n\n\n' + jsonData);
+        //loggerWrite.debug('\n\n\n\n\n updateJsonClient \n\n\n\n\n' + jsonData);
     } catch (error) {
         console.error('Error al obtener datos JSON:', error);
     }
 }
 
 function cbConnection(socket) {
-    console.log('cliente conectado');
+    loggerWrite.info('cliente conectado');
     updateJsonClient();
     socket.on('message', (data) => {
-        //console.log(data);
+        //loggerWrite.info(data);
         mensajes.push(data);
-        console.log('MENSAJE RECIBIDO EN EL SERVIDOR');
+        loggerWrite.debug('MENSAJE RECIBIDO EN EL SERVIDOR');
     });
 }
 
