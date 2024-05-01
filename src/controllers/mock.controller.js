@@ -1,10 +1,11 @@
-const { userService } = require("../repositories")
+const { userService, productService } = require("../repositories")
 const { faker } = require('@faker-js/faker')
 
 
 class MockController {
     constructor(){
         this.userService = userService 
+        this.productService = productService 
     }
 
     newUser(){
@@ -26,6 +27,32 @@ class MockController {
             const result = await this.userService.createUser(user)    
         }
     }
+
+
+    newProduct(){
+        return {
+            title: faker.commerce.product(),
+            description: faker.commerce.productDescription(),
+            code: faker.commerce.isbn(),
+            price: faker.commerce.price(),
+            status: faker.datatype.boolean(),
+            stock: faker.datatype.number(),
+            category: faker.commerce.department(),
+            thumbnails: [faker.image.imageUrl()]
+        }
+    }
+
+    generateProducts = async (req, res)=>{
+        let product = "";
+        console.log("creating products...")
+        for (let i = 0; i < 100; i++) {
+            product = await this.newProduct();
+            console.log(product)
+            const result = await this.productService.createProduct(product);    
+        }
+    }
+
+    
 }
 
 module.exports = MockController

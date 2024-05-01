@@ -4,9 +4,11 @@ const MockController = require('../controllers/mock.controller')
 const router = Router()
 
 const {
-    generateUsers
+    generateUsers,
+    generateProducts
 } = new MockController()
 
 router.get('/generateUsers',        generateUsers )
+router.get('/mockingProducts',        generateProducts )
 
 module.exports = router

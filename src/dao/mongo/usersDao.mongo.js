@@ -6,20 +6,20 @@ class UserDaoMongo { // Dao
     }
 
     get = () => { // consultar usuario
-        return this.userModel.find({})
+        return this.modelMongoose.find({})
     }
     
     getBy = (filter) => { // leer un usuario
-        return this.userModel.findOne(filter)
+        return this.modelMongoose.findOne(filter)
     }
     create = (newUser) => { // crear usuario
-        return this.userModel.create(newUser)
+        return this.modelMongoose.create(newUser)
     } 
     update = (uid, userToUpdate) => { // actualizar usuario
-        return this.userModel.findByIdAndUpdate({_id: uid}, userToUpdate, {new: true})
+        return this.modelMongoose.findByIdAndUpdate({_id: uid}, userToUpdate, {new: true})
     } 
     delete = (uid) => {
-        return this.userModel.findByIdAndDelete({_id: uid})
+        return this.modelMongoose.findByIdAndDelete({_id: uid})
     } 
 }
 

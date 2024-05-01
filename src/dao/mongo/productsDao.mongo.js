@@ -1,8 +1,8 @@
-const { productModel } = require("../models/products.model")
+const { productsModel } = require("../models/products.model")
 
 class ProductDaoMongo {
     constructor(){
-        this.model = productModel
+        this.model = productsModel
     }
 
     // get = async () => await this.model.find({isActive: true})    
