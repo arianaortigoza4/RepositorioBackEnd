@@ -16,6 +16,9 @@ const mockingRouter = require('../src/routes/mocking.router');
 const loggerTest = require('../src/routes/loggertest.router.js');
 const { userService, productService } = require("../src/repositories")
 
+const swaggerJsDocs = require('swagger-jsdoc')
+const swaggerUiExpress = require('swagger-ui-express')
+
 
 const { userModel } = require('../src/dao/models/users.model')
 const { productsModel } = require('../src/dao/models/products.model')
@@ -145,7 +148,20 @@ app.get('/users', async (req, res) => {
     })
 })
 
+// sweagger config -> documentación
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.1',
+        info: {
+            title: 'Documentación de app Coder House',
+            description: 'Descripción de nuestro proyecto'
+        }
+    },
+    apis: [`${__dirname}/docs/**/*.yaml`]
+} 
 
+const specs = swaggerJsDocs(swaggerOptions)
+app.use('/apidocs', swaggerUiExpress.serve, swaggerUiExpress.setup(specs))
 app.get('/products', async (req, res) => {
     //const currentCart = await cartManager.createCart('0',0,0);
     //loggerWrite.debug(currentCart._id.toString());
