@@ -1,4 +1,5 @@
 const UserMongoManager = require("../dao/Mongo/usersDao.mongo")
+const {initializePassport,addLogin, deleteInactiveEmails} = require("../dao/Mongo/sessionManager")
 
 const { createHash, isValidPassword } = require('../utils/hashBcrypt')
 const passport = require('passport')
@@ -28,11 +29,13 @@ class SessionController {
         console.log("req.session.user.role: ", req.session.user.role)
         let urlRedirect = ""
         if(req.session.user.role === "admin" || req.session.user.role === "premium") {
-            urlRedirect = '/realtimeproducts?name=' + encodeURIComponent(req.session.user.name) + '&role=' + encodeURIComponent(req.session.user.role)
+            urlRedirect = '/realtimeproducts?email=' + encodeURIComponent(req.session.user.email) + '&role=' + encodeURIComponent(req.session.user.role)
         }else{
             urlRedirect = '/products?name=' + encodeURIComponent(req.session.user.name) + '&admin=false'
         }
         console.log(urlRedirect)
+
+        addLogin(req.user.email,req.user.role)
         
         res.status(200).send({
             status: 'success',
@@ -55,18 +58,6 @@ class SessionController {
         });
     }
 
-    isAdmin = (req, res, next) => {
-        // Verifica si hay una sesión de usuario
-        if (!req.session.user) {
-            return res.status(401).json({ status: 'error', error: 'No session found' });
-        }
-        if (req.session.user.role !== "admin") {
-            return res.status(403).json({ status: 'error', error: 'Unauthorized' });
-        }
-    
-        next();
-    };
-
 
     logout = (req, res) => {
         // session.destroy()
@@ -78,6 +69,10 @@ class SessionController {
 
     failregister = (req, res) => {
         res.send({error: 'falla en el register'})
+    }
+
+    deleteUsers = (req, res) => {
+        deleteInactiveEmails();
     }
 
     

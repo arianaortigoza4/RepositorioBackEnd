@@ -1,6 +1,7 @@
 const passport = require('passport')
 const local = require('passport-local')
 const { userModel } = require('../models/users.model') // accedemos al user model a travez del manager
+const { loginModel } = require('../models/session.model') // accedemos al user model a travez del manager
 const { createHash, isValidPassword } = require('../../utils/hashBcrypt')
 const GithubStrategy = require('passport-github2') 
 
@@ -98,8 +99,51 @@ const initializePassport = () => {
 }
 
 
+const addLogin = async (email, role) => {
+    const now = new Date();
+
+    // Busca una sesión existente con el mismo email
+    let existingSession = await loginModel.findOne({ email });
+
+    if (existingSession) {
+        // Si existe, actualiza la última conexión
+        existingSession.last_connection = now;
+        await existingSession.save();
+        console.log(`Sesión actualizada para ${email} a las ${now}`);
+    } else {
+        // Si no existe, crea una nueva sesión
+        let newSession = {
+            email,
+            last_connection: now,
+            role
+        };
+        await loginModel.create(newSession);
+        console.log(`Nueva sesión creada para ${email} a las ${now}`);
+    }
+}
+
+const deleteInactiveEmails = async () => {
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+    try {
+        // Elimina todas las sesiones donde la última conexión fue antes de hace 2 días
+        const result = await sessionModel.deleteMany({
+            last_connection: { $lt: twoDaysAgo }
+        });
+
+        console.log(`Se eliminaron ${result.deletedCount} sesiones inactivas.`);
+    } catch (error) {
+        console.error("Error al eliminar sesiones inactivas:", error);
+    }
+}
+
+
+
 
 
 module.exports = {
-    initializePassport
+    initializePassport,
+    addLogin,
+    deleteInactiveEmails
 }

@@ -108,7 +108,8 @@ app.get('/register', (req, res) => {
 
 
 app.get('/realtimeproducts', (req, res) => {
-    res.render('realtimeproducts', {});
+    console.log('req.session.email:', req.session.email)
+    res.render('realtimeproducts', {emailSession : req.session.email});
 });
 
 app.get('/api/chat', (req, res) => {

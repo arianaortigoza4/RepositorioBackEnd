@@ -2,6 +2,7 @@ const { Router } = require('express')
 const {userModel} = require('../dao/models/users.model.js')
 const { createHash, isValidPassword } = require('../utils/hashBcrypt')
 const passport = require('passport')
+const isAdmin = require('../middleware/isAdmin.js')
 const SessionController = require('../controllers/sessions.controller')
 
 const router = Router()
@@ -12,9 +13,9 @@ const {
     register,
     login,
     current,
-    isAdmin,
     logout,
-    failregister
+    failregister,
+    deleteUsers
 } = new SessionController()
 
 
@@ -27,6 +28,8 @@ router.get('/current', isAdmin, current);
 router.get('/logout', logout)
 
 router.get('/failregister', failregister)
+
+router.delete('/', deleteUsers)
 
 
 

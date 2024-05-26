@@ -48,4 +48,23 @@ router.get('/recuperar-contrasena/:email/:token', async (req, res) => {
     }
 });
 
+router.post('/productDeleted', async (req, res) => {
+    try {
+        const { email, productTitle } = req.body;
+
+        console.log("email: " + email);
+        console.log("productTitle: " + productTitle);
+        
+        const destinatario = email;
+        const subject = 'Su producto ha sido eliminado';
+        const html = `<div><h1>El siguiente producto ha sido eliminado:</h1><h2>${productTitle}</h2></div>`;
+        
+        await sendMail(destinatario, subject, html);
+        res.send('Correo electrónico de notificación enviado');
+    } catch (error) {
+        console.error('Error al enviar el correo electrónico de notificación:', error);
+        res.status(500).send('Error al enviar el correo electrónico de notificación');
+    }
+});
+
 module.exports = router

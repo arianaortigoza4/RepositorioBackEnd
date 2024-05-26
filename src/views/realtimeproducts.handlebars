@@ -30,7 +30,7 @@
   <input type="text" id="category" name="category" required><br>
   
   <label for="owner">Propietario:</label>
-  <input type="email" id="owner" name="owner" readonly><br>
+  <input value= type="email" id="owner" name="owner" readonly><br>
   
   <label for="thumbnails">Imágenes:</label>
   <input type="text" id="thumbnails" name="thumbnails" required><br>
@@ -57,6 +57,7 @@
 
 
 <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+<script src="../utils/sendEmail.js"></script>
 <script>
     
     
@@ -79,7 +80,7 @@
     function showAddProductForm() {
         document.getElementById("addProductForm").style.display = "block";
         // Actualizando el valor del campo de propietario en el formulario
-        document.getElementById("owner").value = getParameterByName('name');
+        document.getElementById("owner").value = getParameterByName('email');
     }
 
     function sendAddProductRequest() {
@@ -135,19 +136,24 @@
       console.log(data);
     }
 
-    async function sendDeleteRequest() {
-        var name = getParameterByName('name');
+    async function sendDeleteRequest(req, res) {
+        var email = getParameterByName('email');
         var role = getParameterByName('role');
-        console.log(name, role);
+        console.log(email, role);
         let isAllowed2Delete = false;
         const productId = document.getElementById('productId').value;
+
+        const product = await fetch(`http://localhost:8080/api/products/${productId}`, { method: 'GET' });    
+        const dataProduct = await product.json();
+        const productTitle = dataProduct.payload.title;
+        console.log("productTitle: " + productTitle);
+        const productOwner = dataProduct.payload.owner
+        console.log("productOwner: " + productOwner);
         if(role == 'admin') {
             isAllowed2Delete = true;
         }else{
-            const product = await fetch(`http://localhost:8080/api/products/${productId}`, { method: 'GET' });    
-            const dataProduct = await product.json();
-            console.log("El producto pertenece a : " + dataProduct.payload.owner + "y usted es : " + name);
-            if(name == dataProduct.payload.owner){
+            console.log("El producto pertenece a : " + productOwner + "y usted es : " + email);
+            if(email == productOwner){
                 console.log("El producto le pertenece");
                 isAllowed2Delete = true;
             }
@@ -158,6 +164,23 @@
             const response = await fetch(`http://localhost:8080/api/products/${productId}`, { method: 'DELETE' });
             const data = await response.text();
             console.log(data);
+            
+            
+            const emailRequest = {
+                email: productOwner,
+                productTitle: productTitle
+            };
+
+            fetch("http://localhost:8080/mail/productDeleted", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(emailRequest)
+            })
+            .then(response => response.text())
+            .then(result => console.log(result))
+            .catch(error => console.log('Error al enviar el correo electrónico:', error));
+            
+            
             console.log("Producto eliminado");
         }else{
 
@@ -179,13 +202,13 @@
 
     // Obtener el nombre de usuario de la URL y mostrar un mensaje de bienvenida si está presente
     document.addEventListener('DOMContentLoaded', function() {
-        var name = getParameterByName('name');
+        var email = getParameterByName('email');
         var role = getParameterByName('role');
 
         console.log("role: " + role);
-        if (name) {
+        if (email) {
             console.log("role: " + role);
-            document.getElementById('welcomeMessage').textContent = 'Bienvenidd@, ' + name + '!\n Usted es usuario ' + role;
+            document.getElementById('welcomeMessage').textContent = 'Bienvenidd@, ' + email + '!\n Usted es usuario ' + role;
             /*if(admin === 'true') {
                 console.log("admin");
                 document.getElementById('welcomeMessage').textContent = 'Bienvenidd@, ' + name + '!\n Usted es ADMINISTRADOR' ;

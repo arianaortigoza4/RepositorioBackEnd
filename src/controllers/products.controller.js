@@ -96,6 +96,7 @@ class ProductController {
 
     deleteProduct  = async (req, res) => {
         try {
+            console.log('req.session.email: ' + req.session.email);
             const { pid } = req.params;
             const result = await this.service.deleteProduct(pid);
             res.send({
