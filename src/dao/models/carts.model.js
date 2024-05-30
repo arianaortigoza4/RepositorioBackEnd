@@ -6,8 +6,7 @@ const cartsSchema = new mongoose.Schema({
   products: [
     {
       product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'products'
+        type: String
       },
       price: {
         type: Number,
@@ -19,20 +18,20 @@ const cartsSchema = new mongoose.Schema({
   ],
 }, { timestamps: true });
 
-cartsSchema.pre('find', function (next) {
-  this.populate('products.product');
-  next();
-});
+// cartsSchema.pre('find', function (next) {
+//   this.populate('products.product');
+//   next();
+// });
 
-cartsSchema.pre('findOne', function (next) {
-  this.populate('products.product');
-  next();
-});
+// cartsSchema.pre('findOne', function (next) {
+//   this.populate('products.product');
+//   next();
+// });
 
-cartsSchema.pre('findOneAndUpdate', function (next) {
-  this.populate('products.product');
-  next();
-});
+// cartsSchema.pre('findOneAndUpdate', function (next) {
+//   this.populate('products.product');
+//   next();
+// });
 
 const cartsModel = mongoose.model(cartsCollection, cartsSchema);
 

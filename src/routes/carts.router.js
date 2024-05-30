@@ -163,7 +163,7 @@ router.post('/:cid/purchase', async (req, res) => {
         // Agrega más propiedades según sea necesario
       });
     console.log("Total price:", totalPrice);
-    currentTicket = await ticketManager.createTicket(totalPrice,req.body.email)
+    currentTicket = await ticketManager.createTicket(totalPrice,req.body.email,cartId)
     res.status(200).send({ status: 'Success', payload: currentTicket });
   } catch (error) {
     res.status(500).send({ status: 'Error', payload: `${error}` });

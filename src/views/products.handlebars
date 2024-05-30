@@ -17,6 +17,8 @@
 
 <div id="responseText" style="text-align: center; margin-top: 20px;"></div>
 
+<div id="totalPrice" style="text-align: center; margin-top: 20px;"></div>
+
 <form style="text-align: center; margin-top: 20px;">
   <label for="email">Correo Electrónico:</label>
   <input type="email" id="email" name="email" required>
@@ -35,16 +37,23 @@
     function showDataFront(data){
         data = JSON.parse(data); // Convertir la cadena de texto en un objeto JSON
         console.log("data:", data); 
-        let productsIdsHTML = ""  
+        let productsIdsHTML = "" 
+        let totalPrice = 0;
+
         data.payload.products.forEach(product => {
-            productsIdsHTML += `ID: ${product._id} | Precio: ${product.price} | Cantidad: ${product.quantity} \n`; // Agrega cada ID como un elemento de la lista
+            if (product.product){
+                productsIdsHTML += `ID: ${product.product} | Precio: ${product.price} | Cantidad: ${product.quantity} \n`; // Agrega cada ID como un elemento de la lista
+                totalPrice = totalPrice + product.price*product.quantity;
+            }
         });
 
         // Obtener el div donde mostrar los IDs de los productos
         const productsDiv = document.getElementById('responseText');
+        const totalPriceDiv = document.getElementById('totalPrice');
 
         // Insertar la cadena HTML en el div
         productsDiv.innerText = productsIdsHTML;
+        totalPriceDiv.innerHTML = "TOTAL : $ " + totalPrice
     }
 
     async function createCart(pid,price) {
@@ -64,20 +73,20 @@
         const data = await response.json();
         console.log("data:", data);
 
-        if (response.ok) {
+        /*if (response.ok) {
             document.getElementById('responseText').innerText = "Producto agregado al carrito correctamente.";
         } else {
             document.getElementById('responseText').innerText = "Error al agregar el producto al carrito.";
-        }
+        }*/
 
         // Manejar la respuesta del servidor
-        if (data.payload && Array.isArray(data.payload.products) && data.payload.products.length > 0) {
+        /*if (data.payload && Array.isArray(data.payload.products) && data.payload.products.length > 0) {
             // Concatenar información de los productos
             const productInfo = data.payload.products.map(product => `ID: ${product._id} | Precio: ${product.price} | Cantidad: ${product.quantity}`);
             document.getElementById('responseText').innerText = productInfo.join('\n');
         } else {
             document.getElementById('responseText').innerText = "No se encontraron productos válidos en el carrito.";
-        }
+        }*/
 
         // Mostrar el ID del carrito
         if (data.payload && data.payload._id) {
@@ -124,7 +133,7 @@
                 email: document.getElementById('email').value
             };
 
-            let urlRequest = "http://localhost:8080/api/carts/" + encodeURI(cartID) + "/purchase"
+            let urlRequest = `http://localhost:8080/api/carts/${cartID}/purchase`
             
             const response = await fetch(urlRequest, {
                 method: 'POST',
@@ -136,7 +145,13 @@
 
             const data = await response.text();
             console.log(data);
-            // Puedes agregar más lógica aquí, como redirigir a una página de confirmación, etc.
+
+            const productsDiv = document.getElementById('responseText');
+            //const totalPriceDiv = document.getElementById('totalPrice');
+
+            // Insertar la cadena HTML en el div
+            productsDiv.innerText = "Su compra se ha realizado con exito!";
+            //totalPriceDiv.innerHTML = "TOTAL : $ " + totalPrice
         } catch (error) {
             console.error('Error:', error);
         }

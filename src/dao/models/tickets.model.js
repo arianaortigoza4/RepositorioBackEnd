@@ -5,15 +5,10 @@ const mongoosePaginate = require('mongoose-paginate-v2')
 const ticketsCollection = 'tickets'
 
 const ticketsSchema = new mongoose.Schema({
-    id: {
+    cart_id: {
         type: String, //mongoose.Schema.Types.ObjectId,
         required: true,
-        unique: true
-    },
-    code: {
-        type: String, //mongoose.Schema.Types.ObjectId,
-        required: true,
-        unique: true
+        unique: false
     },
     purchase_datetime: {
         type: String,
